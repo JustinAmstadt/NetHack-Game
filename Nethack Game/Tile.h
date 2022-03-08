@@ -8,33 +8,46 @@
 
 class Tile {
 	private:
-		int xCoord;
-		int yCoord;
-		int pixelWidth = (xCoord - 1) * 24 + 3; //not being used currently
-		int pixelHeight = (yCoord - 1) * 24; //not being used currently
-		int startingTileWidthDistance = 0;
-		int startingTileHeightDistance = 40;
-		int tileWidthDistance = 1;
-		int tileHeightDistance = 1;
+		//int pixelWidth = (xCoord - 1) * 24 + 3; //not being used currently
+		//int pixelHeight = (yCoord - 1) * 24; //not being used currently
+		
+		
 
-		bool isWall = false;
+	protected:
+		SDL_Renderer* gRenderer;
 
 		std::string name;
 
 		SDL_Texture* texture;
 		SDL_Surface* surface;
 
-		SDL_Renderer* gRenderer;
+		int xCoord;
+		int yCoord;
+
+		int startingTileWidthDistance = 0;
+		int startingTileHeightDistance = 64;
+
+		const int SIZE_OF_TILE = 24;
+		int wallX1 = -6 + xCoord * SIZE_OF_TILE + startingTileWidthDistance;
+		int wallY1 = -4 + yCoord * SIZE_OF_TILE + startingTileHeightDistance;
+
+		bool isWall = false;
+
+		int tileWidthDistance = 1;
+		int tileHeightDistance = 1;
 
 	public:
-		Tile(SDL_Texture*, SDL_Surface*, std::string, SDL_Renderer*);
+		Tile();
+		Tile(int x, int y);
 		~Tile();
 
 		int getPixelWidth();
 		int getPixelHeight();
 
-		void setXCoord(int);
-		void setYCoord(int);
+		virtual void render();
+
+		virtual void setXCoord(int);
+		virtual void setYCoord(int);
 		int getXCoord();
 		int getYCoord();
 
@@ -57,7 +70,7 @@ class Tile {
 		void setName(std::string);
 		std::string getName();
 
-		void draw();
+		virtual void draw();
 		bool getIsWall();
 		void setIsWall(bool);
 };

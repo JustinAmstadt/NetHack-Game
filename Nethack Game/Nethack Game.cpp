@@ -1,10 +1,9 @@
-/*
+﻿/*
 To-Do List:
 add an info section on the top
 - add health bar/info
 - currently equipped items
 - current level/area
-- remove one height and add a permanent upper wall to separate status area from playable area
 - text message section
 
 bombs
@@ -21,9 +20,23 @@ add item menu/screen
 make a treasure chest
 */
 
+/*
+0: starting room
+1: side connected room with two openings
+2: "" right side open
+3: "" left side open
+4: south opening dead end
+5: north south hallway with room in middle
+6: 4-way intersection
+*/
+
 #include "Player.h"
 #include "Texture.h"
 #include "Tile.h"
+#include "Wall.h"
+#include "CharRender.h"
+#include "Room.h"
+#include "Dungeon.h"
 #include <iostream>
 #include <SDL.h>
 #include <SDL_ttf.h>
@@ -31,21 +44,28 @@ make a treasure chest
 #include <fstream>
 #include <array>
 
-bool drawBoard(Player* player, Texture* floor_texture, Texture* player_texture, SDL_Surface* screenSurface, SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture, Tile* tileArr[24][35]) {
-    
-    //resets all tiles to the floor tile
-    for (int i = 0; i < 24; i++) {
-        for (int j = 0; j < 35; j++) {
-            tileArr[i][j]->setTexture(floor_texture->getTexture());
-            tileArr[i][j]->setSurface(floor_texture->getSurface());
-            tileArr[i][j]->setName("floor");
-        }
-    }
+const int SCREEN_WIDTH = 828;
+const int SCREEN_HEIGHT = 606;
 
-    //replace a floor tile with player tile
-    tileArr[player->getYCoord()][player->getXCoord()]->setName("player");
-    tileArr[player->getYCoord()][player->getXCoord()]->setTexture(player_texture->getTexture());
-    tileArr[player->getYCoord()][player->getXCoord()]->setSurface(player_texture->getSurface());
+SDL_Window* window = NULL;
+SDL_Surface* screenSurface = NULL;
+SDL_Renderer* renderer = NULL;
+SDL_Texture* texture = NULL;
+
+bool drawStatusSection(SDL_Renderer* renderer) {
+    /*const int SCREEN_WIDTH = 828;
+    int x1 = tileArr[0][0]->getStartingTileWidthDistance();
+    int x2 = x1 + SCREEN_WIDTH;
+    int y1 = -4 + tileArr[0][0]->getStartingTileHeightDistance();
+    int y2 = y1 - 1;
+    
+    SDL_RenderDrawLine(renderer, x1, y1, x2, y1);
+    SDL_RenderDrawLine(renderer, x1, y2, x2, y2);
+    SDL_RenderPresent(renderer);*/
+    return true;
+}
+
+bool drawBoard(Player* player, SDL_Surface* screenSurface, SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture, Dungeon* dungeon, Room* room) {
     
     //resets rendering target
     SDL_RenderCopy(renderer, texture, NULL, NULL);
@@ -54,79 +74,43 @@ bool drawBoard(Player* player, Texture* floor_texture, Texture* player_texture, 
     SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 00, 00, 00));
     SDL_UpdateWindowSurface(window);
 
-    tileArr[10][7]->setName("vertical wall");
-    tileArr[9][7]->setName("right up corner");
-    tileArr[9][6]->setName("horizontal wall");
+    //makes sure room is up to date
+    room = dungeon->getCurrentRoom(player);
 
-    tileArr[11][7]->setName("right down corner");
-    tileArr[11][5]->setName("left down corner");
-    tileArr[9][5]->setName("left up corner");
-
-    tileArr[10][5]->setName("vertical wall");
-    tileArr[11][6]->setName("horizontal wall");
-
-    tileArr[10][6]->setName("blank");
+    //gets rid of player then replaces player in new position
+    room->setTileArr(player);
 
     //draws tile textures onto screen
-    for (int i = 0; i < 24; i++) 
-    {
-        for (int j = 0; j < 35; j++) 
-        {
-            if (tileArr[i][j]->getName() == "floor")
-            {
-                SDL_Rect floor_destination = { tileArr[i][j]->getTileWidthDistance(), tileArr[i][j]->getTileHeightDistance(), tileArr[i][j]->getSurface()->w, tileArr[i][j]->getSurface()->h };
-
-                if (SDL_RenderCopy(renderer, tileArr[i][j]->getTexture(), NULL, &floor_destination) < 0)
-                    std::cout << SDL_GetError();
-            }
-            else if (tileArr[i][j]->getName() == "player")
-            {
-                                                                  //adds plus one to account for the fact that the & was a pixel off to the left
-                SDL_Rect player_destination = { tileArr[i][j]->getTileWidthDistance() + 1, tileArr[i][j]->getTileHeightDistance(), tileArr[i][j]->getSurface()->w, tileArr[i][j]->getSurface()->h };
-
-                if (SDL_RenderCopy(renderer, tileArr[i][j]->getTexture(), NULL, &player_destination) < 0)
-                    std::cout << SDL_GetError();
-            }
-        }
-    }
-
-    
-
-    SDL_RenderPresent(renderer);
+    room->drawTileTexturesToScreen();
 
     return true;
 }
 
-int gameLoop(Player* player, Texture* floor_texture, Texture* player_texture, SDL_Surface* screenSurface, SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture) {
+int gameLoop(Player* player, SDL_Surface* screenSurface, SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture) {
     bool quit = false;
 
     SDL_Event e;
 
-    //creates a 2D tile array and assigns the objects to the floor texture, gives them the floor name, and gives them proper pixel coordinates and x/y coordinates
-    Tile* tileArr[24][35];
-    //must first create objects to be able to pull out starting tile width distance. This way I can control that value from the class, not search for the variable in the main function
-    for (int i = 0; i < 24; i++) {
-        for (int j = 0; j < 35; j++) {
-            tileArr[i][j] = new Tile(floor_texture->getTexture(), floor_texture->getSurface(), "floor", renderer);
-        }
-    }
+    Tile* objArr[9];
 
-    int tileWidthDistance = tileArr[0][0]->getStartingTileWidthDistance();
-    int tileHeightDistance = tileArr[0][0]->getStartingTileHeightDistance();
+    objArr[0] = new Asterisk(renderer, -1, -1);
+    objArr[1] = new HorizontalWall(renderer, -1, -1);
+    objArr[2] = new VertWall(renderer, -1, -1);
+    objArr[3] = new RightUpCorner(renderer, -1, -1);
+    objArr[4] = new RightDownCorner(renderer, -1, -1);
+    objArr[5] = new LeftUpCorner(renderer, -1, -1);
+    objArr[6] = new LeftDownCorner(renderer, -1, -1);
+    objArr[7] = new PlayerChar(renderer, player->getXCoord(), player->getYCoord());
+    objArr[8] = new Blank(-1, -1);
 
-    for (int i = 0; i < 24; i++) {
-        for (int j = 0; j < 35; j++) {
-            tileArr[i][j]->setTileWidthDistance(tileWidthDistance);
-            tileArr[i][j]->setTileHeightDistance(tileHeightDistance);
-            tileArr[i][j]->setXCoord(j);
-            tileArr[i][j]->setYCoord(i);
-            tileWidthDistance += 24;
-        }
-        tileHeightDistance += 24;
-        tileWidthDistance = tileArr[0][0]->getStartingTileWidthDistance();
-    }
+    //create a new object with the starting room id
 
-    drawBoard(player, floor_texture, player_texture, screenSurface, window, renderer, texture, tileArr);
+    Room* room = NULL;
+    Dungeon* dungeon = new Dungeon(renderer, objArr);
+    dungeon->setRoomArr(player);
+
+    drawBoard(player, screenSurface, window, renderer, texture, dungeon, room);
+    drawStatusSection(renderer);
 
     while (!quit) {
 
@@ -140,37 +124,32 @@ int gameLoop(Player* player, Texture* floor_texture, Texture* player_texture, SD
                 switch (e.key.keysym.sym) {
                     
                     case SDLK_UP:
-                        if (player->getYCoord() != 0)
-                            player->subYCoord(tileArr);
+                        player->moveUp();
                         break;
 
                     case SDLK_DOWN:
-                        if (player->getYCoord() != 23)
-                            player->addYCoord(tileArr);
+                        player->moveDown();
                         break;
 
                     case SDLK_LEFT:
-                        if (player->getXCoord() != 0)
-                            player->subXCoord(tileArr);
+                        player->moveLeft();
                         break;
 
                     case SDLK_RIGHT:
-                        if (player->getXCoord() != 34)
-                            player->addXCoord(tileArr);
+                        player->moveRight();
                         break;
 
                 }
-                drawBoard(player, floor_texture, player_texture, screenSurface, window, renderer, texture, tileArr);
+                drawBoard(player, screenSurface, window, renderer, texture, dungeon, room);
+                drawStatusSection(renderer);
             }
         }
     }
-
     return 0;
 }
 
 bool sdlAssignWindowSurfaceRendererTexture(SDL_Window*& window, SDL_Surface*& screenSurface, SDL_Renderer*& renderer, SDL_Texture*& texture) {
-    const int SCREEN_WIDTH = 832;
-    const int SCREEN_HEIGHT = 610; //orig height was 570
+    
     
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
         std::cout << "SDL video init error. SDL Error : " << SDL_GetError() << std::endl;
@@ -210,22 +189,13 @@ bool sdlAssignWindowSurfaceRendererTexture(SDL_Window*& window, SDL_Surface*& sc
 }
 
 int main(int argc, char* args[]) {
-    SDL_Window* window = NULL;
-    SDL_Surface* screenSurface = NULL;
-    SDL_Renderer* renderer = NULL;
-    SDL_Texture* texture = NULL;
 
-    Player* player = NULL;
-    Texture* player_texture = NULL;
-    Texture* floor_texture = NULL;
 
     sdlAssignWindowSurfaceRendererTexture(window, screenSurface, renderer, texture);
 
-    player = new Player();
-    player_texture = new Texture(renderer, "player");
-    floor_texture = new Texture(renderer, "floor");
-
-    gameLoop(player, floor_texture, player_texture, screenSurface, window, renderer, texture);
+    Player* player = new Player();
+    
+    gameLoop(player, screenSurface, window, renderer, texture);
 
     SDL_StopTextInput();
     SDL_FreeSurface(screenSurface);
@@ -236,8 +206,6 @@ int main(int argc, char* args[]) {
     renderer = NULL;
     texture = NULL;
     player = NULL;
-    player_texture = NULL;
-    floor_texture = NULL;
     TTF_Quit();
     SDL_Quit();
     

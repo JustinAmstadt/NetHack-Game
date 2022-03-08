@@ -1,4 +1,4 @@
-#include "Texture.h"
+﻿#include "Texture.h"
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <string>

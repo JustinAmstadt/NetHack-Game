@@ -147,20 +147,28 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CharRender.cpp" />
+    <ClCompile Include="Dungeon.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="Nethack Game.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Room.cpp" />
     <ClCompile Include="Tile.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="Wall.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CharRender.h" />
+    <ClInclude Include="Dungeon.h" />
     <ClInclude Include="Enemy.h" />
+    <ClInclude Include="Room.h" />
     <ClInclude Include="Tile.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="Wall.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

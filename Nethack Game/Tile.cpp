@@ -2,23 +2,38 @@
 
 #include <iostream>
 
-Tile::Tile(SDL_Texture* texture, SDL_Surface* surface, std::string name, SDL_Renderer* renderer) 
+Tile::Tile()
 {
-	this->texture = texture;
-	this->surface = surface;
-	this->name = name;
-	gRenderer = renderer;
+	xCoord = -1;
+	yCoord = -1;
+
+	texture = NULL;
+	surface = NULL;
+
+	name = "filler";
+
+	gRenderer = NULL;
 }
 
-int Tile::getPixelWidth() 
+Tile::Tile(int x, int y)
 {
-	return pixelWidth;
+	xCoord = x;
+	yCoord = y;
 }
 
-int Tile::getPixelHeight() 
+Tile::~Tile()
 {
-	return pixelHeight;
 }
+
+//int Tile::getPixelWidth() 
+//{
+//	return pixelWidth;
+//}
+//
+//int Tile::getPixelHeight() 
+//{
+//	return pixelHeight;
+//}
 
 int Tile::getXCoord() 
 {
@@ -124,9 +139,8 @@ void Tile::draw()
 
 	if (name == "vertical wall") 
 	{
-		int x1 = -6 + xCoord * X_WIDTH_OF_TILE;
-		int x2 = x1 + 1;
-		int x3 = x1 + X_WIDTH_OF_TILE;
+		int x2 = wallX1 + 1;
+		int x3 = wallX1 + X_WIDTH_OF_TILE;
 		int x4 = x3 + 1;
 		int y2 = wallY1 + Y_HEIGHT_OF_TILE;
 		
@@ -215,4 +229,8 @@ bool Tile::getIsWall()
 void Tile::setIsWall(bool isWall)
 {
 	this->isWall = isWall;
+}
+
+void Tile::render() {
+
 }

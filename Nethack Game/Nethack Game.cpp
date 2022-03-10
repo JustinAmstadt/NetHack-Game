@@ -1,4 +1,6 @@
 ﻿/*
+sight range
+ 
 To-Do List:
 add an info section on the top
 - add health bar/info
@@ -28,6 +30,21 @@ make a treasure chest
 4: south opening dead end
 5: north south hallway with room in middle
 6: 4-way intersection
+7: "" with rooms in the corners
+8: single room W
+9: single room N
+10: single room E
+11: single room S
+12: single room NS
+13: single room NW
+14: single room NE
+15: single room ES
+16: single room WS
+17: single room NWS
+18: single room NES
+19: single room EWN
+20: single room WES
+21: single room all directions
 */
 
 #include "Player.h"
@@ -43,29 +60,52 @@ make a treasure chest
 #include <string>
 #include <fstream>
 #include <array>
+#include <utility>
+
+bool sdlAssignWindowSurfaceRendererTexture();
+bool drawBoard(Player* player, Dungeon* dungeon, Room* room);
+bool drawStatusSection();
+int gameLoop(Player* player);
 
 const int SCREEN_WIDTH = 828;
 const int SCREEN_HEIGHT = 606;
+
+const int DUNGEON_Y_SIZE = 9;
+const int DUNGEON_X_SIZE = 9;
+
+const int OBJ_ARR_SIZE = 9;
 
 SDL_Window* window = NULL;
 SDL_Surface* screenSurface = NULL;
 SDL_Renderer* renderer = NULL;
 SDL_Texture* texture = NULL;
 
-bool drawStatusSection(SDL_Renderer* renderer) {
-    /*const int SCREEN_WIDTH = 828;
-    int x1 = tileArr[0][0]->getStartingTileWidthDistance();
-    int x2 = x1 + SCREEN_WIDTH;
-    int y1 = -4 + tileArr[0][0]->getStartingTileHeightDistance();
-    int y2 = y1 - 1;
-    
-    SDL_RenderDrawLine(renderer, x1, y1, x2, y1);
-    SDL_RenderDrawLine(renderer, x1, y2, x2, y2);
-    SDL_RenderPresent(renderer);*/
-    return true;
+int main(int argc, char* args[]) {
+
+    sdlAssignWindowSurfaceRendererTexture();
+
+    //puts player in centermost room
+    Player* player = new Player(DUNGEON_X_SIZE / 2, DUNGEON_Y_SIZE / 2);
+
+    gameLoop(player);
+
+    SDL_StopTextInput();
+    SDL_FreeSurface(screenSurface);
+    SDL_DestroyTexture(texture);
+    SDL_DestroyWindow(window);
+    SDL_DestroyRenderer(renderer);
+    window = NULL;
+    screenSurface = NULL;
+    renderer = NULL;
+    texture = NULL;
+    player = NULL;
+    TTF_Quit();
+    SDL_Quit();
+
+    return 0;
 }
 
-bool drawBoard(Player* player, SDL_Surface* screenSurface, SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture, Dungeon* dungeon, Room* room) {
+bool drawBoard(Player* player, Dungeon* dungeon, Room* room) {
     
     //resets rendering target
     SDL_RenderCopy(renderer, texture, NULL, NULL);
@@ -86,12 +126,12 @@ bool drawBoard(Player* player, SDL_Surface* screenSurface, SDL_Window* window, S
     return true;
 }
 
-int gameLoop(Player* player, SDL_Surface* screenSurface, SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture) {
+int gameLoop(Player* player) {
     bool quit = false;
 
     SDL_Event e;
 
-    Tile* objArr[9];
+    Tile* objArr[OBJ_ARR_SIZE];
 
     objArr[0] = new Asterisk(renderer, -1, -1);
     objArr[1] = new HorizontalWall(renderer, -1, -1);
@@ -106,11 +146,11 @@ int gameLoop(Player* player, SDL_Surface* screenSurface, SDL_Window* window, SDL
     //create a new object with the starting room id
 
     Room* room = NULL;
-    Dungeon* dungeon = new Dungeon(renderer, objArr);
+    Dungeon* dungeon = new Dungeon(renderer, objArr, DUNGEON_X_SIZE, DUNGEON_Y_SIZE, OBJ_ARR_SIZE);
     dungeon->setRoomArr(player);
 
-    drawBoard(player, screenSurface, window, renderer, texture, dungeon, room);
-    drawStatusSection(renderer);
+    drawBoard(player, dungeon, room);
+    drawStatusSection();
 
     while (!quit) {
 
@@ -140,17 +180,30 @@ int gameLoop(Player* player, SDL_Surface* screenSurface, SDL_Window* window, SDL
                         break;
 
                 }
-                drawBoard(player, screenSurface, window, renderer, texture, dungeon, room);
-                drawStatusSection(renderer);
+                drawBoard(player, dungeon, room);
+                drawStatusSection();
             }
         }
     }
     return 0;
 }
 
-bool sdlAssignWindowSurfaceRendererTexture(SDL_Window*& window, SDL_Surface*& screenSurface, SDL_Renderer*& renderer, SDL_Texture*& texture) {
+bool drawStatusSection() {
+    int getStartingTileWidthDistance = 64;
     
-    
+    int x1 = 0;
+    int x2 = x1 + SCREEN_WIDTH;
+    int y1 = -4 + getStartingTileWidthDistance;
+    int y2 = y1 - 1;
+
+    SDL_RenderDrawLine(renderer, x1, y1, x2, y1);
+    SDL_RenderDrawLine(renderer, x1, y2, x2, y2);
+    SDL_RenderPresent(renderer);
+    return true;
+}
+
+bool sdlAssignWindowSurfaceRendererTexture() {
+
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
         std::cout << "SDL video init error. SDL Error : " << SDL_GetError() << std::endl;
         return false;
@@ -186,28 +239,4 @@ bool sdlAssignWindowSurfaceRendererTexture(SDL_Window*& window, SDL_Surface*& sc
     }
 
     return true;
-}
-
-int main(int argc, char* args[]) {
-
-
-    sdlAssignWindowSurfaceRendererTexture(window, screenSurface, renderer, texture);
-
-    Player* player = new Player();
-    
-    gameLoop(player, screenSurface, window, renderer, texture);
-
-    SDL_StopTextInput();
-    SDL_FreeSurface(screenSurface);
-    SDL_DestroyWindow(window);
-    SDL_DestroyRenderer(renderer);
-    window = NULL;
-    screenSurface = NULL;
-    renderer = NULL;
-    texture = NULL;
-    player = NULL;
-    TTF_Quit();
-    SDL_Quit();
-    
-    return 0;
 }

@@ -4,7 +4,9 @@
 #include <string>
 #include <iostream>
 
-Texture::Texture(SDL_Renderer* renderer, std::string texture_name) {
+Texture::Texture(SDL_Renderer* renderer, std::string texture_name, SDL_Color color, int font_size) {
+	this->color = color;
+	this->font_size = font_size;
 	setName(texture_name);
 	setFont();
 	createSurface();
@@ -35,9 +37,9 @@ SDL_Texture* Texture::getTexture() {
 bool Texture::setFont() {
 
 	if (name == "floor")
-		font = TTF_OpenFont("C:\\Windows\\Fonts\\ADOBEGOTHICSTD-BOLD.OTF", 25);
+		font = TTF_OpenFont("C:\\Windows\\Fonts\\ADOBEGOTHICSTD-BOLD.OTF", font_size);
 	else if (name == "player")
-		font = TTF_OpenFont("C:\\Windows\\Fonts\\ADOBEGOTHICSTD-BOLD.OTF", 15);
+		font = TTF_OpenFont("C:\\Windows\\Fonts\\ADOBEGOTHICSTD-BOLD.OTF", font_size);
 	else
 		std::cout << "name is incompatible with texture class.";
 
@@ -51,9 +53,9 @@ bool Texture::setFont() {
 
 bool Texture::createSurface() {
 	if (name == "floor")
-		surface = TTF_RenderText_Solid(font, "*", floorColor);
+		surface = TTF_RenderText_Solid(font, "*", color);
 	else if (name == "player")
-		surface = TTF_RenderText_Solid(font, "&", playerColor);
+		surface = TTF_RenderText_Solid(font, "&", color);
 	else
 		std::cout << "The name '" << name << "' is incompatible with texture class." << std::endl;
 

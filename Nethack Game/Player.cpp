@@ -5,6 +5,16 @@
 #include <SDL_ttf.h>
 #include <iostream>
 
+Player::Player(int roomXCoord, int roomYCoord)
+{
+    this->roomXCoord = roomXCoord;
+    this->roomYCoord = roomYCoord;
+}
+
+Player::~Player()
+{
+}
+
 int Player::getXCoord() {
     return xCoord;
 }
@@ -49,7 +59,7 @@ void Player::getTileArr(Tile* tileArr[23][35])
         }
 }
 
-void Player::getIntRoomArr(int intRoomArr[3][3])
+void Player::getIntRoomArr(int intRoomArr[9][9])
 {
     for (int y = 0; y < roomArrYSize; y++)
         for (int x = 0; x < roomArrXSize; x++)

@@ -7,17 +7,21 @@ class Dungeon {
 	private:
 		SDL_Renderer* gRenderer;
 
-		int roomArrXSize = 3;
-		int roomArrYSize = 3;
-		Room* roomArr[3][3];
-		int intRoomArr[3][3];
+		int dungeon_x_size;
+		int dungeon_y_size;
+		int obj_arr_size;
+
+		Room* roomArr[9][9];
+		int intRoomArr[9][9] = { 0 };
 		Tile* objArr[9];
 
 		Room* currentRoom;
 	public:
 
-	Dungeon(SDL_Renderer*, Tile* [9]);
+	Dungeon(SDL_Renderer*, Tile* [9], const int, const int, const int);
 	~Dungeon();
+
+	bool arraySizeCheck();
 
 	void setRoomArr(Player*);
 	Room* getCurrentRoom(Player*);

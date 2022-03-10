@@ -11,14 +11,14 @@ class Texture {
 		TTF_Font* font;
 		SDL_Surface* surface;
 		SDL_Texture* texture;
-		SDL_Color playerColor = { 255, 255, 255 };
-		SDL_Color floorColor = { 128,128,128 };
+		SDL_Color color = { 0 };
+		int font_size;
 
 		SDL_Renderer* gRenderer;
 
 	public:
 
-		Texture(SDL_Renderer*, std::string);
+		Texture(SDL_Renderer*, std::string, SDL_Color, int);
 		~Texture();
 
 		std::string getName();

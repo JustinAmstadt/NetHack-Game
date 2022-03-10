@@ -10,15 +10,15 @@ private:
     int yCoord = 11;
     int middleXCoord = 17;
     int middleYCoord = 11;
-    int roomXCoord = 1;
-    int roomYCoord = 1;
+    int roomXCoord;
+    int roomYCoord;
 
     int health = 0;
     int attackDamage = 0;
     int armorRating = 0;
 
     Tile* tileArr[23][35];
-    int intRoomArr[3][3];
+    int intRoomArr[9][9] = { 0 };
 
     int roomArrXSize;
     int roomArrYSize;
@@ -26,7 +26,9 @@ private:
     bool ghostMode = true;
 
 public:
-    
+    Player(int roomXCoord, int roomYCoord);
+    ~Player();
+
     int getXCoord();
     void setXCoord(int x);
     int getYCoord();
@@ -37,7 +39,7 @@ public:
     void setRoomYCoord(int y);
 
     void getTileArr(Tile* tileArr[23][35]);
-    void getIntRoomArr(int intRoomArr[3][3]);
+    void getIntRoomArr(int intRoomArr[9][9]);
     void getRoomArrSize(int, int);
 
     void moveUp();
